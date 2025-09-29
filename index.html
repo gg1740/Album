@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Corner</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the app */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .post-card, .profile-modal {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .btn-primary {
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .btn-primary:hover {
+            transform: scale(1.02);
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        /* Spinner for loading states */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4f46e5;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <!-- Main Application Container -->
+    <div id="app" class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center">
+            <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+                    <p class="text-gray-500">Please sign in to your account.</p>
+                </div>
+                <form id="login-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="username" class="text-sm font-medium text-gray-700 sr-only">Username</label>
+                            <input type="text" id="username" placeholder="Username" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                        <div>
+                            <label for="password" class="text-sm font-medium text-gray-700 sr-only">Password</label>
+                            <input type="password" id="password" placeholder="Password" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
+                    </div>
+                    <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden">Invalid username or password.</p>
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 btn-primary mt-6">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main App Content -->
+        <div id="main-content" class="hidden">
+            <div id="profile-banner" class="h-48 bg-cover bg-center rounded-2xl mb-8 shadow-inner" style="background-image: url('https://placehold.co/1200x300/E0E7FF/4F46E5?text=Welcome');"></div>
+            <header class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Activity Feed</h1>
+                    <p id="welcome-message" class="text-gray-500 mt-1">Viewing all posts</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="profile-btn" class="font-medium text-gray-600 hover:text-indigo-600 transition-colors">Profile</button>
+                    <button id="logout-btn" class="font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Logout</button>
+                </div>
+            </header>
+
+            <!-- Create Post Form -->
+            <div class="bg-white p-6 rounded-2xl shadow-md mb-8">
+                <h2 class="text-xl font-bold mb-4">Create a New Post</h2>
+                <form id="post-form">
+                    <textarea id="post-content" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" rows="4" placeholder="What's on your mind?"></textarea>
+                    <div id="media-preview-container" class="mt-4 hidden"></div>
+                    <div class="flex justify-between items-center mt-4">
+                        <label for="media-upload" class="cursor-pointer text-indigo-600 hover:text-indigo-800 font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block -mt-1 mr-1"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Attach Photo/Video
+                        </label>
+                        <input type="file" id="media-upload" class="hidden" accept="image/*,video/*">
+                        <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-indigo-700 btn-primary disabled:bg-gray-400" id="post-submit-btn">Post</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Posts Feed -->
+            <div>
+                 <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
+                <div id="posts-feed" class="space-y-6">
+                    <div id="loading-state" class="text-center text-gray-500 py-10">Loading posts...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Customization Modal -->
+        <div id="profile-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md profile-modal max-h-full overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-6">Edit Profile</h2>
+                <form id="profile-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="display-name" class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                            <input type="text" id="display-name" class="w-full border border-gray-300 rounded-lg p-3" required>
+                        </div>
+                         <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title / Headline</label>
+                            <input type="text" id="title" class="w-full border border-gray-300 rounded-lg p-3" placeholder="e.g., Creative Explorer">
+                        </div>
+                        <div>
+                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                            <textarea id="bio" class="w-full border border-gray-300 rounded-lg p-3" rows="3" placeholder="Tell us a little about yourself..."></textarea>
+                        </div>
+                        <div>
+                            <label for="profile-pic-upload" class="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+                            <div class="flex items-center space-x-4">
+                                <img id="profile-pic-preview" class="w-24 h-24 rounded-full object-cover" src="https://placehold.co/96x96/E0E7FF/4F46E5?text=You" alt="Profile preview">
+                                <input type="file" id="profile-pic-upload" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100" accept="image/*">
+                            </div>
+                        </div>
+                        <div>
+                             <label for="background-pic-upload" class="block text-sm font-medium text-gray-700 mb-1">Background Picture</label>
+                             <img id="background-pic-preview" class="w-full h-32 object-cover rounded-lg mb-2" src="https://placehold.co/400x150/E0E7FF/4F46E5?text=Banner" alt="Background preview">
+                             <input type="file" id="background-pic-upload" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100" accept="image/*">
+                        </div>
+                    </div>
+                    <div id="profile-loading-spinner" class="mt-6 hidden justify-center"><div class="spinner"></div></div>
+                    <div class="flex justify-end space-x-4 mt-8">
+                        <button type="button" id="cancel-profile-btn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-lg">Cancel</button>
+                        <button type="submit" id="save-profile-btn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase and App Logic -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, setLogLevel, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        // --- Firebase Configuration ---
+        // PASTE YOUR FIREBASE CONFIG OBJECT HERE
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4ua1tUIhZPcdkp0ACx0mRU6wCJycDDng",
+            authDomain: "platform-a1c09.firebaseapp.com",
+            projectId: "platform-a1c09",
+            storageBucket: "platform-a1c09.firebasestorage.app",
+            messagingSenderId: "471030818675",
+            appId: "1:471030818675:web:034102469a22b71350c706",
+            measurementId: "G-ZP30LJEHY1"
+        };
+        
+        const users = { 'user1': { password: 'pass1' }, 'user2': { password: 'pass2' } };
+        const appId = "our-corner-app";
+        let currentUser = null, db, auth, storage, postsCollectionRef, unsubscribePosts = null;
+
+        // --- DOM Elements ---
+        const loginScreen = document.getElementById('login-screen');
+        const mainContent = document.getElementById('main-content');
+        // ... (rest of the DOM elements are the same)
+        const loginForm = document.getElementById('login-form');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const postsFeed = document.getElementById('posts-feed');
+        const postForm = document.getElementById('post-form');
+        const postContent = document.getElementById('post-content');
+        const postSubmitBtn = document.getElementById('post-submit-btn');
+        const mediaUpload = document.getElementById('media-upload');
+        const mediaPreviewContainer = document.getElementById('media-preview-container');
+        const profileModal = document.getElementById('profile-modal');
+        const profileForm = document.getElementById('profile-form');
+        const displayNameInput = document.getElementById('display-name');
+        const titleInput = document.getElementById('title');
+        const bioInput = document.getElementById('bio');
+        const profilePicUpload = document.getElementById('profile-pic-upload');
+        const profilePicPreview = document.getElementById('profile-pic-preview');
+        const backgroundPicUpload = document.getElementById('background-pic-upload');
+        const backgroundPicPreview = document.getElementById('background-pic-preview');
+
+        // --- Initialization ---
+        async function initialize() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                storage = getStorage(app);
+                setLogLevel('debug');
+                await signInAnonymously(auth); // Simple anonymous sign-in for backend access
+                console.log("Firebase connection successful.");
+                postsCollectionRef = collection(db, `artifacts/${appId}/public/data/posts`);
+            } catch (error) { 
+                console.error("Error initializing Firebase:", error); 
+                alert("Could not connect to the database. Please check your Firebase configuration in the code.");
+            }
+        }
+
+        // --- Authentication & Profile ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            document.getElementById('login-error').classList.add('hidden');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const user = users[username];
+
+            if (user && user.password === password) {
+                const profileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, username);
+                const profileDoc = await getDoc(profileDocRef);
+                
+                currentUser = {
+                    username: username,
+                    displayName: profileDoc.exists() && profileDoc.data().displayName ? profileDoc.data().displayName : `Profile ${username.slice(-1)}`,
+                    profilePictureUrl: profileDoc.exists() && profileDoc.data().profilePictureUrl ? profileDoc.data().profilePictureUrl : 'https://placehold.co/96x96/E0E7FF/4F46E5?text=You',
+                    title: profileDoc.exists() ? profileDoc.data().title : 'New User',
+                    bio: profileDoc.exists() ? profileDoc.data().bio : 'No bio yet.',
+                    backgroundPictureUrl: profileDoc.exists() && profileDoc.data().backgroundPictureUrl ? profileDoc.data().backgroundPictureUrl : 'https://placehold.co/1200x300/E0E7FF/4F46E5?text=Welcome'
+                };
+
+                loginScreen.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                welcomeMessage.textContent = `Logged in as ${currentUser.displayName}.`;
+                document.getElementById('profile-banner').style.backgroundImage = `url('${currentUser.backgroundPictureUrl}')`;
+                listenForPosts();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        // ... (rest of the script is the same)
+        function logout() {
+            currentUser = null;
+            if (unsubscribePosts) {
+                unsubscribePosts();
+                unsubscribePosts = null;
+            }
+            mainContent.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            postsFeed.innerHTML = '';
+            postContent.value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function openProfileEditor() {
+            displayNameInput.value = currentUser.displayName;
+            titleInput.value = currentUser.title || '';
+            bioInput.value = currentUser.bio || '';
+            profilePicPreview.src = currentUser.profilePictureUrl;
+            backgroundPicPreview.src = currentUser.backgroundPictureUrl;
+            profileModal.classList.remove('hidden');
+        }
+
+        function closeProfileEditor() {
+            profileModal.classList.add('hidden');
+            profileForm.reset();
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const saveBtn = document.getElementById('save-profile-btn');
+            const spinner = document.getElementById('profile-loading-spinner');
+            saveBtn.disabled = true;
+            spinner.style.display = 'flex';
+
+            let newProfilePicUrl = currentUser.profilePictureUrl;
+            let newBackgroundPicUrl = currentUser.backgroundPictureUrl;
+
+            const profileFile = profilePicUpload.files[0];
+            if (profileFile) {
+                const storageRef = ref(storage, `profile_pictures/${currentUser.username}/${profileFile.name}`);
+                await uploadBytes(storageRef, profileFile);
+                newProfilePicUrl = await getDownloadURL(storageRef);
+            }
+
+            const backgroundFile = backgroundPicUpload.files[0];
+            if (backgroundFile) {
+                const storageRef = ref(storage, `background_pictures/${currentUser.username}/${backgroundFile.name}`);
+                await uploadBytes(storageRef, backgroundFile);
+                newBackgroundPicUrl = await getDownloadURL(storageRef);
+            }
+
+            const newProfileData = {
+                displayName: displayNameInput.value,
+                title: titleInput.value,
+                bio: bioInput.value,
+                profilePictureUrl: newProfilePicUrl,
+                backgroundPictureUrl: newBackgroundPicUrl,
+            };
+
+            const profileDocRef = doc(db, `artifacts/${appId}/public/data/profiles`, currentUser.username);
+            await setDoc(profileDocRef, newProfileData, { merge: true });
+
+            currentUser = { ...currentUser, ...newProfileData };
+            welcomeMessage.textContent = `Logged in as ${currentUser.displayName}.`;
+            document.getElementById('profile-banner').style.backgroundImage = `url('${currentUser.backgroundPictureUrl}')`;
+            
+            saveBtn.disabled = false;
+            spinner.style.display = 'none';
+            closeProfileEditor();
+        }
+        
+        function renderPosts(posts) {
+            const loadingState = document.getElementById('loading-state');
+            if (!posts.length) {
+                postsFeed.innerHTML = `<p class="text-center text-gray-500 py-10">No posts yet. Be the first to share something!</p>`;
+                return;
+            }
+
+            loadingState.style.display = 'none';
+            postsFeed.innerHTML = '';
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'bg-white p-5 rounded-xl shadow-md post-card';
+                const timestamp = post.timestamp?.toDate().toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }) || 'Just now';
+
+                let mediaHTML = '';
+                if (post.mediaUrl) {
+                    if (post.mediaType.startsWith('image/')) {
+                        mediaHTML = `<img src="${post.mediaUrl}" alt="User upload" class="mt-4 rounded-lg w-full h-auto max-h-96 object-contain">`;
+                    } else if (post.mediaType.startsWith('video/')) {
+                        mediaHTML = `<video controls src="${post.mediaUrl}" class="mt-4 rounded-lg w-full max-h-96"></video>`;
+                    }
+                }
+
+                postElement.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                         <img src="${post.profilePictureUrl}" class="w-12 h-12 rounded-full object-cover" alt="${post.displayName}'s profile picture">
+                         <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-lg">${post.displayName}</span>
+                                <span class="text-xs text-gray-400">${timestamp}</span>
+                            </div>
+                            <p class="text-gray-700 whitespace-pre-wrap mt-1">${post.content}</p>
+                         </div>
+                    </div>
+                    ${mediaHTML}
+                `;
+                postsFeed.appendChild(postElement);
+            });
+        }
+        
+        function listenForPosts() {
+            if (!db) return;
+            if (unsubscribePosts) unsubscribePosts();
+            
+            const q = query(postsCollectionRef, orderBy('timestamp', 'desc'));
+            unsubscribePosts = onSnapshot(q, (snapshot) => {
+                const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPosts(posts);
+            }, (error) => console.error("Error fetching posts:", error));
+        }
+        
+        async function createPost(e) {
+            e.preventDefault();
+            if (!db || !currentUser || (!postContent.value.trim() && !mediaUpload.files[0])) {
+                return;
+            }
+            postSubmitBtn.disabled = true;
+            postSubmitBtn.textContent = 'Posting...';
+
+            let mediaUrl = null, mediaType = null;
+            const file = mediaUpload.files[0];
+
+            if (file) {
+                try {
+                    const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    mediaUrl = await getDownloadURL(storageRef);
+                    mediaType = file.type;
+                } catch (error) {
+                    console.error("Error uploading file:", error);
+                    postSubmitBtn.disabled = false;
+                    postSubmitBtn.textContent = 'Post';
+                    return;
+                }
+            }
+
+            try {
+                await addDoc(postsCollectionRef, {
+                    displayName: currentUser.displayName,
+                    profilePictureUrl: currentUser.profilePictureUrl,
+                    content: postContent.value,
+                    mediaUrl: mediaUrl,
+                    mediaType: mediaType,
+                    timestamp: serverTimestamp()
+                });
+                postForm.reset();
+                mediaPreviewContainer.innerHTML = '';
+                mediaPreviewContainer.classList.add('hidden');
+            } catch (error) {
+                console.error("Error adding document: ", error);
+            } finally {
+                postSubmitBtn.disabled = false;
+                postSubmitBtn.textContent = 'Post';
+            }
+        }
+        
+        loginForm.addEventListener('submit', handleLogin);
+        document.getElementById('logout-btn').addEventListener('click', logout);
+        document.getElementById('profile-btn').addEventListener('click', openProfileEditor);
+        document.getElementById('cancel-profile-btn').addEventListener('click', closeProfileEditor);
+        profileForm.addEventListener('submit', saveProfile);
+        postForm.addEventListener('submit', createPost);
+
+        mediaUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                mediaPreviewContainer.classList.remove('hidden');
+                mediaPreviewContainer.innerHTML = '';
+                let previewElement;
+                if (file.type.startsWith('image/')) {
+                    previewElement = document.createElement('img');
+                    previewElement.src = URL.createObjectURL(file);
+                    previewElement.className = 'max-h-40 rounded-lg';
+                } else {
+                    previewElement = document.createElement('p');
+                    previewElement.textContent = `Selected video: ${file.name}`;
+                    previewElement.className = 'text-sm text-gray-600';
+                }
+                mediaPreviewContainer.appendChild(previewElement);
+            }
+        });
+
+        profilePicUpload.addEventListener('change', (e) => {
+             const file = e.target.files[0];
+             if (file) {
+                 profilePicPreview.src = URL.createObjectURL(file);
+             }
+        });
+        
+        backgroundPicUpload.addEventListener('change', (e) => {
+             const file = e.target.files[0];
+             if (file) {
+                 backgroundPicPreview.src = URL.createObjectURL(file);
+             }
+        });
+
+        initialize();
+    </script>
+</body>
+</html>
+
