@@ -165,18 +165,16 @@
             <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md modal-content max-h-full overflow-y-auto">
                 <h2 class="text-2xl font-bold mb-6">Account Settings</h2>
                 
-                <!-- Change Username Section -->
                 <div class="mb-8">
                     <h3 class="text-lg font-semibold border-b pb-2 mb-4">Change Username</h3>
                     <p class="text-sm text-gray-600 mb-4">
-                        Changing your username is a complex operation and is disabled to prevent data loss. Your username acts as your permanent ID.
+                        Changing your username is disabled to prevent data loss. Your username acts as your permanent ID.
                     </p>
                     <label for="current-username" class="block text-sm font-medium text-gray-700 mb-1">Current Username</label>
                     <input type="text" id="current-username" class="w-full border bg-gray-100 border-gray-300 rounded-lg p-3" disabled>
                     <button class="w-full bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg mt-4 cursor-not-allowed">Save Username</button>
                 </div>
 
-                <!-- Change Password Section -->
                 <div>
                     <h3 class="text-lg font-semibold border-b pb-2 mb-4">Change Password</h3>
                      <p class="text-sm text-gray-600 mb-4">
@@ -203,6 +201,27 @@
                             <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg btn-primary">Save Password</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Profile Modal -->
+        <div id="view-profile-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+            <div class="bg-white p-0 rounded-2xl shadow-lg w-full max-w-md modal-content max-h-full overflow-y-auto relative">
+                <button id="close-view-profile-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+                <div id="view-profile-banner" class="h-40 bg-cover bg-center rounded-t-2xl" style="background-image: url('https://placehold.co/400x160/E0E7FF/4F46E5');"></div>
+                <div class="p-8">
+                    <div class="flex flex-col items-center -mt-20">
+                        <img id="view-profile-pic" class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg" src="https://placehold.co/112x112/E0E7FF/4F46E5?text=User" alt="Profile picture">
+                        <h2 id="view-profile-name" class="text-3xl font-bold mt-4">Display Name</h2>
+                        <p id="view-profile-title" class="text-gray-500 mt-1">User Title</p>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <h3 class="text-lg font-semibold border-b pb-2 mb-4">Bio</h3>
+                        <p id="view-profile-bio" class="text-gray-700">User bio goes here.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -258,6 +277,7 @@
             const settingsModal = document.getElementById('settings-modal');
             const passwordForm = document.getElementById('password-form');
             const passwordFeedback = document.getElementById('password-feedback');
+            const viewProfileModal = document.getElementById('view-profile-modal');
 
             // --- Authentication & Profile ---
             async function handleLogin(e) {
@@ -432,6 +452,36 @@
                 }, 2000);
             }
             
+            // --- View Profile Functions ---
+            async function openViewProfileModal(username) {
+                if (!username) return;
+
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('username', username)
+                    .single();
+
+                if (error) {
+                    console.error('Error fetching profile to view:', error);
+                    return;
+                }
+
+                if (data) {
+                    document.getElementById('view-profile-banner').style.backgroundImage = `url('${data.background_picture_url}')`;
+                    document.getElementById('view-profile-pic').src = data.profile_picture_url;
+                    document.getElementById('view-profile-name').textContent = data.display_name;
+                    document.getElementById('view-profile-title').textContent = data.title || 'No title set';
+                    document.getElementById('view-profile-bio').textContent = data.bio || 'No bio set.';
+                    viewProfileModal.classList.remove('hidden');
+                }
+            }
+
+            function closeViewProfileModal() {
+                viewProfileModal.classList.add('hidden');
+            }
+
+
             // --- Posts ---
             async function fetchAndRenderPosts() {
                 const { data: posts, error } = await supabaseClient
@@ -477,10 +527,10 @@
 
                     postElement.innerHTML = `
                         <div class="flex items-start space-x-4">
-                             <img src="${post.profiles.profile_picture_url}" class="w-12 h-12 rounded-full object-cover" alt="${post.profiles.display_name}'s profile picture">
+                             <img src="${post.profiles.profile_picture_url}" data-username="${post.user_id}" class="w-12 h-12 rounded-full object-cover cursor-pointer view-profile-trigger" alt="${post.profiles.display_name}'s profile picture">
                              <div class="flex-1">
                                 <div class="flex items-center justify-between">
-                                    <span class="font-bold text-lg">${post.profiles.display_name}</span>
+                                    <span class="font-bold text-lg cursor-pointer view-profile-trigger" data-username="${post.user_id}">${post.profiles.display_name}</span>
                                     <span class="text-xs text-gray-400">${postDate}</span>
                                 </div>
                                 <p class="text-gray-700 whitespace-pre-wrap mt-1">${post.content}</p>
@@ -559,6 +609,14 @@
             document.getElementById('settings-btn').addEventListener('click', openSettingsEditor);
             document.getElementById('cancel-settings-btn').addEventListener('click', closeSettingsEditor);
             passwordForm.addEventListener('submit', handleChangePassword);
+            document.getElementById('close-view-profile-btn').addEventListener('click', closeViewProfileModal);
+
+            postsFeed.addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-profile-trigger')) {
+                    const username = e.target.dataset.username;
+                    openViewProfileModal(username);
+                }
+            });
 
             mediaUpload.addEventListener('change', (e) => {
                 const file = e.target.files[0];
