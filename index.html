@@ -17,7 +17,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        .post-card, .profile-modal {
+        .modal-content, .post-card {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .post-card:hover {
@@ -89,6 +89,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <button id="profile-btn" class="font-medium text-gray-600 hover:text-indigo-600 transition-colors">Profile</button>
+                    <button id="settings-btn" class="font-medium text-gray-600 hover:text-indigo-600 transition-colors">Settings</button>
                     <button id="logout-btn" class="font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Logout</button>
                 </div>
             </header>
@@ -121,7 +122,7 @@
 
         <!-- Profile Customization Modal -->
         <div id="profile-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-            <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md profile-modal max-h-full overflow-y-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md modal-content max-h-full overflow-y-auto">
                 <h2 class="text-2xl font-bold mb-6">Edit Profile</h2>
                 <form id="profile-form">
                     <div class="space-y-4">
@@ -158,6 +159,54 @@
                 </form>
             </div>
         </div>
+        
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md modal-content max-h-full overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-6">Account Settings</h2>
+                
+                <!-- Change Username Section -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold border-b pb-2 mb-4">Change Username</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Changing your username is a complex operation and is disabled to prevent data loss. Your username acts as your permanent ID.
+                    </p>
+                    <label for="current-username" class="block text-sm font-medium text-gray-700 mb-1">Current Username</label>
+                    <input type="text" id="current-username" class="w-full border bg-gray-100 border-gray-300 rounded-lg p-3" disabled>
+                    <button class="w-full bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg mt-4 cursor-not-allowed">Save Username</button>
+                </div>
+
+                <!-- Change Password Section -->
+                <div>
+                    <h3 class="text-lg font-semibold border-b pb-2 mb-4">Change Password</h3>
+                     <p class="text-sm text-gray-600 mb-4">
+                        This will only change your password for the current session. It will reset when you reload the page.
+                    </p>
+                    <form id="password-form">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="current-password" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                <input type="password" id="current-password" class="w-full border border-gray-300 rounded-lg p-3" required>
+                            </div>
+                            <div>
+                                <label for="new-password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input type="password" id="new-password" class="w-full border border-gray-300 rounded-lg p-3" required>
+                            </div>
+                            <div>
+                                <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                <input type="password" id="confirm-password" class="w-full border border-gray-300 rounded-lg p-3" required>
+                            </div>
+                        </div>
+                        <p id="password-feedback" class="text-sm mt-4 text-center"></p>
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <button type="button" id="cancel-settings-btn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-lg">Cancel</button>
+                            <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg btn-primary">Save Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- App Logic -->
@@ -169,8 +218,6 @@
             
             let supabaseClient;
             try {
-                // The global 'supabase' object comes from the script tag.
-                // We are creating our own client instance from it.
                 supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
             } catch (error) {
                  console.error("Supabase initialization failed. Check the script tag and your keys.", error);
@@ -208,6 +255,9 @@
             const profileBanner = document.getElementById('profile-banner');
             const profileLoadingSpinner = document.getElementById('profile-loading-spinner');
             const saveProfileBtn = document.getElementById('save-profile-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const passwordForm = document.getElementById('password-form');
+            const passwordFeedback = document.getElementById('password-feedback');
 
             // --- Authentication & Profile ---
             async function handleLogin(e) {
@@ -239,14 +289,13 @@
                     .eq('username', username)
                     .single();
 
-                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine for a new user
+                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
                     console.error('Error loading profile:', error);
                 }
                 
                 if (data) {
                     currentUser = data;
                 } else {
-                    // Create a default profile if one doesn't exist
                     const { data: newData, error: newError } = await supabaseClient
                         .from('profiles')
                         .insert({
@@ -341,6 +390,47 @@
                 saveProfileBtn.disabled = false;
                 profileLoadingSpinner.style.display = 'none';
             }
+
+            // --- Settings Functions ---
+            function openSettingsEditor() {
+                document.getElementById('current-username').value = currentUser.username;
+                passwordFeedback.textContent = '';
+                passwordFeedback.className = 'text-sm mt-4 text-center';
+                passwordForm.reset();
+                settingsModal.classList.remove('hidden');
+            }
+
+            function closeSettingsEditor() {
+                settingsModal.classList.add('hidden');
+            }
+
+            function handleChangePassword(e) {
+                e.preventDefault();
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (currentPassword !== users[currentUser.username].password) {
+                    passwordFeedback.textContent = 'Current password is incorrect.';
+                    passwordFeedback.className = 'text-sm mt-4 text-center text-red-500';
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    passwordFeedback.textContent = 'New passwords do not match.';
+                    passwordFeedback.className = 'text-sm mt-4 text-center text-red-500';
+                    return;
+                }
+
+                users[currentUser.username].password = newPassword;
+                
+                passwordFeedback.textContent = 'Password updated successfully for this session!';
+                passwordFeedback.className = 'text-sm mt-4 text-center text-green-500';
+
+                setTimeout(() => {
+                    closeSettingsEditor();
+                }, 2000);
+            }
             
             // --- Posts ---
             async function fetchAndRenderPosts() {
@@ -405,7 +495,7 @@
             function listenForPosts() {
                 if (postsSubscription) postsSubscription.unsubscribe();
                 
-                fetchAndRenderPosts(); // Initial fetch
+                fetchAndRenderPosts();
                 
                 postsSubscription = supabaseClient
                     .channel('public:posts')
@@ -466,6 +556,9 @@
             document.getElementById('cancel-profile-btn').addEventListener('click', closeProfileEditor);
             profileForm.addEventListener('submit', saveProfile);
             postForm.addEventListener('submit', createPost);
+            document.getElementById('settings-btn').addEventListener('click', openSettingsEditor);
+            document.getElementById('cancel-settings-btn').addEventListener('click', closeSettingsEditor);
+            passwordForm.addEventListener('submit', handleChangePassword);
 
             mediaUpload.addEventListener('change', (e) => {
                 const file = e.target.files[0];
