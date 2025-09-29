@@ -164,14 +164,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- Supabase Configuration ---
-            const supabaseUrl = 'https://gmspsldgxgbhtoepkyaw.supabase.co'; // Paste your URL here
-            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtc3BzbGRneGdiaHRvZXBreWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMjA0NjIsImV4cCI6MjA3NDY5NjQ2Mn0.7wMhuvMrMhxAbo4lSKCnF5wa5_XtOGKAtu3hOqmxDBg'; // Paste your Anon Key here
+            const supabaseUrl = 'https://gmspsldgxgbhtoepkyaw.supabase.co';
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtc3BzbGRneGdiaHRvZXBreWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMjA0NjIsImV4cCI6MjA3NDY5NjQ2Mn0.7wMhuvMrMhxAbo4lSKCnF5wa5_XtOGKAtu3hOqmxDBg';
             
-            let supabase;
+            let supabaseClient;
             try {
-                supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                // The global 'supabase' object comes from the script tag.
+                // We are creating our own client instance from it.
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
             } catch (error) {
-                 console.error("Supabase initialization failed. Have you pasted your URL and Key?");
+                 console.error("Supabase initialization failed. Check the script tag and your keys.", error);
             }
 
             // --- User Data (Local for login) ---
@@ -210,8 +212,8 @@
             // --- Authentication & Profile ---
             async function handleLogin(e) {
                 e.preventDefault();
-                if (!supabase) {
-                    alert("Supabase is not configured. Please paste your URL and Key into the script.");
+                if (!supabaseClient) {
+                    alert("Supabase is not configured. Please check your URL and Key in the script.");
                     return;
                 }
                 
@@ -231,7 +233,7 @@
             }
             
             async function loadUserProfile(username) {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('profiles')
                     .select('*')
                     .eq('username', username)
@@ -245,7 +247,7 @@
                     currentUser = data;
                 } else {
                     // Create a default profile if one doesn't exist
-                    const { data: newData, error: newError } = await supabase
+                    const { data: newData, error: newError } = await supabaseClient
                         .from('profiles')
                         .insert({
                             username: username,
@@ -321,7 +323,7 @@
                     background_picture_url: backgroundPicUrl
                 };
 
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('profiles')
                     .update(updates)
                     .eq('username', currentUser.username)
@@ -342,7 +344,7 @@
             
             // --- Posts ---
             async function fetchAndRenderPosts() {
-                const { data: posts, error } = await supabase
+                const { data: posts, error } = await supabaseClient
                     .from('posts')
                     .select(`
                         *,
@@ -405,7 +407,7 @@
                 
                 fetchAndRenderPosts(); // Initial fetch
                 
-                postsSubscription = supabase
+                postsSubscription = supabaseClient
                     .channel('public:posts')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, fetchAndRenderPosts)
                     .subscribe();
@@ -426,7 +428,7 @@
                     mediaType = file.type;
                 }
 
-                const { error } = await supabase.from('posts').insert({
+                const { error } = await supabaseClient.from('posts').insert({
                     user_id: currentUser.username,
                     content: content,
                     media_url: mediaUrl,
@@ -448,12 +450,12 @@
             // --- File Handling ---
             async function uploadFile(file, bucket) {
                 const fileName = `${Date.now()}_${file.name}`;
-                const { error } = await supabase.storage.from(bucket).upload(fileName, file);
+                const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
                 if (error) {
                     console.error(`Error uploading to ${bucket}:`, error);
                     return null;
                 }
-                const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
+                const { data } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
                 return data.publicUrl;
             }
 
@@ -501,6 +503,4 @@
     </script>
 </body>
 </html>
-
-
 
