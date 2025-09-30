@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- BCrypt.js for password hashing -->
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -267,13 +269,9 @@
 
     </div>
     
-    <!-- BCrypt.js for password hashing -->
-    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     <!-- App Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Alias the library to the expected variable name after it loads.
-            const bcrypt = dcodeIO.bcrypt;
 
             // --- Supabase Configuration ---
             const supabaseUrl = 'https://gmspsldgxgbhtoepkyaw.supabase.co';
@@ -389,8 +387,8 @@
                     }
 
                     // Hash password and create user
-                    const salt = await bcrypt.genSalt(10);
-                    const hash = await bcrypt.hash(password, salt);
+                    const salt = await dcodeIO.bcrypt.genSalt(10);
+                    const hash = await dcodeIO.bcrypt.hash(password, salt);
                     
                     const { error: createError } = await supabaseClient
                         .from('profiles')
@@ -454,7 +452,7 @@
                         throw new Error("Could not find that username.");
                     }
                     
-                    const match = await bcrypt.compare(password, profile.password_hash);
+                    const match = await dcodeIO.bcrypt.compare(password, profile.password_hash);
                     if (match) {
                         await loadUserProfile(username);
                         loginScreen.classList.add('hidden');
@@ -584,7 +582,7 @@
                 const newPassword = document.getElementById('new-password').value;
                 const confirmPassword = document.getElementById('confirm-password').value;
                 
-                const match = await bcrypt.compare(currentPassword, currentUser.password_hash);
+                const match = await dcodeIO.bcrypt.compare(currentPassword, currentUser.password_hash);
                 if (!match) {
                     passwordFeedback.textContent = 'Current password is incorrect.';
                     passwordFeedback.className = 'text-sm mt-4 text-center text-red-500';
@@ -603,8 +601,8 @@
                     return;
                 }
 
-                const salt = await bcrypt.genSalt(10);
-                const newHash = await bcrypt.hash(newPassword, salt);
+                const salt = await dcodeIO.bcrypt.genSalt(10);
+                const newHash = await dcodeIO.bcrypt.hash(newPassword, salt);
                 
                 const { data, error } = await supabaseClient
                     .from('profiles')
