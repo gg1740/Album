@@ -533,7 +533,7 @@
                 let backgroundPicUrl = currentUser.background_picture_url;
                 const backgroundFile = backgroundPicUpload.files[0];
                 if (backgroundFile) {
-                    backgroundPicUrl = await uploadFile(backgroundFile, 'background-pictures');
+                    backgroundPicUrl = await uploadFile(backgroundFile, 'profile-pictures');
                 }
 
                 const updates = {
