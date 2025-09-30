@@ -272,6 +272,9 @@
     <!-- App Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Alias the library to the expected variable name after it loads.
+            const bcrypt = dcodeIO.bcrypt;
+
             // --- Supabase Configuration ---
             const supabaseUrl = 'https://gmspsldgxgbhtoepkyaw.supabase.co';
             const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtc3BzbGRneGdiaHRvZXBreWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMjA0NjIsImV4cCI6MjA3NDY5NjQ2Mn0.7wMhuvMrMhxAbo4lSKCnF5wa5_XtOGKAtu3hOqmxDBg';
