@@ -36,13 +36,21 @@
             transform: scale(0.98);
         }
         /* Spinner for loading states */
+        .spinner, .page-loader-spinner {
+            border-radius: 50%;
+            animation: spin 1s ease infinite;
+        }
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
             width: 20px;
             height: 20px;
-            border-radius: 50%;
             border-left-color: #fff;
-            animation: spin 1s ease infinite;
+        }
+        .page-loader-spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            border-left-color: #4f46e5;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -51,6 +59,12 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased">
+    
+    <!-- Page Loader -->
+    <div id="page-loader" class="fixed inset-0 bg-gray-50 flex flex-col items-center justify-center z-50">
+        <div class="page-loader-spinner"></div>
+        <p class="mt-4 text-gray-500">Loading...</p>
+    </div>
 
     <!-- Main Application Container -->
     <div id="app" class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -302,6 +316,7 @@
             let postToDelete = {};
             let postToEditId = null;
 
+            const pageLoader = document.getElementById('page-loader');
             const loginScreen = document.getElementById('login-screen');
             const registerScreen = document.getElementById('register-screen');
             const mainContent = document.getElementById('main-content');
@@ -345,16 +360,19 @@
             const editPostContent = document.getElementById('edit-post-content');
 
             function showLoginScreen() {
+                pageLoader.classList.add('hidden');
                 registerScreen.classList.add('hidden');
                 mainContent.classList.add('hidden');
                 loginScreen.classList.remove('hidden');
             }
             function showRegisterScreen() {
+                pageLoader.classList.add('hidden');
                 loginScreen.classList.add('hidden');
                 mainContent.classList.add('hidden');
                 registerScreen.classList.remove('hidden');
             }
             function showMainContent() {
+                pageLoader.classList.add('hidden');
                 loginScreen.classList.add('hidden');
                 registerScreen.classList.add('hidden');
                 mainContent.classList.remove('hidden');
@@ -368,7 +386,8 @@
                         showMainContent();
                         listenForPosts();
                     } catch (error) {
-                        console.error("Session restore failed:", error);
+                        console.error("Session restore failed. This is often caused by incorrect Row Level Security (RLS) policies on your 'profiles' table in Supabase. Please ensure SELECT access is allowed.", error);
+                        alert("Could not restore your session. Please check the developer console for more details (Right-click -> Inspect -> Console).");
                         localStorage.removeItem('currentUserUsername');
                         showLoginScreen();
                     }
@@ -474,7 +493,7 @@
             
             async function loadUserProfile(username) {
                 const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', username).single();
-                if (error) throw new Error("Failed to load user profile after login.");
+                if (error) throw error;
                 currentUser = data;
                 updateUIForUser();
             }
@@ -755,6 +774,7 @@
                 return data.publicUrl;
             }
 
+            // --- Event Listeners ---
             loginForm.addEventListener('submit', handleLogin);
             registerForm.addEventListener('submit', handleRegister);
             showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showRegisterScreen(); });
@@ -786,6 +806,19 @@
                  if (e.target.closest('.edit-post-btn')) {
                     const button = e.target.closest('.edit-post-btn');
                     openEditPostModal(button.dataset.postId);
+                }
+            });
+            
+            // Listen for storage changes to sync across tabs
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'currentUserUsername') {
+                    if (event.newValue) {
+                        // User logged in on another tab
+                        checkSession();
+                    } else {
+                        // User logged out on another tab
+                        logout();
+                    }
                 }
             });
 
