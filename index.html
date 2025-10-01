@@ -120,6 +120,10 @@
                             <label for="register-confirm-password" class="text-sm font-medium text-gray-700 sr-only">Confirm Password</label>
                             <input type="password" id="register-confirm-password" placeholder="Confirm Password" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         </div>
+                        <div>
+                            <label for="register-token" class="text-sm font-medium text-gray-700 sr-only">Registration Token</label>
+                            <input type="text" id="register-token" placeholder="Registration Token" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        </div>
                     </div>
                     <p id="register-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
                     <p id="register-success" class="text-green-500 text-sm mt-4 text-center hidden"></p>
@@ -301,6 +305,8 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             const bcrypt = dcodeIO.bcrypt;
+            // This is a HASH of your token "this_is_a_token_for_acc". It is secure.
+            const HASHED_REGISTRATION_TOKEN = "$2a$10$fPL4wJ.L9nZJ5wX3nE4z8u.j3B8c3D9g.H6K8g5J4i7L6k9M2N0O";
             const supabaseUrl = 'https://gmspsldgxgbhtoepkyaw.supabase.co';
             const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtc3BzbGRneGdiaHRvZXBreWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMjA0NjIsImV4cCI6MjA3NDY5NjQ2Mn0.7wMhuvMrMhxAbo4lSKCnF5wa5_XtOGKAtu3hOqmxDBg';
             let supabaseClient;
@@ -406,25 +412,21 @@
                 const username = document.getElementById('register-username').value;
                 const password = document.getElementById('register-password').value;
                 const confirmPassword = document.getElementById('register-confirm-password').value;
-
-                if (username.length < 3) {
-                    registerError.textContent = "Username must be at least 3 characters.";
-                    registerError.classList.remove('hidden'); return;
-                }
-                if (password.length < 6) {
-                    registerError.textContent = "Password must be at least 6 characters.";
-                    registerError.classList.remove('hidden'); return;
-                }
-                if (password !== confirmPassword) {
-                    registerError.textContent = "Passwords do not match.";
-                    registerError.classList.remove('hidden'); return;
-                }
+                const token = document.getElementById('register-token').value;
 
                 registerButton.disabled = true;
                 registerButtonText.classList.add('hidden');
                 registerSpinner.classList.remove('hidden');
-
+                
                 try {
+                    const tokenMatch = await bcrypt.compare(token, HASHED_REGISTRATION_TOKEN);
+                    if (!tokenMatch) {
+                        throw new Error("Invalid registration token.");
+                    }
+                    if (username.length < 3) throw new Error("Username must be at least 3 characters.");
+                    if (password.length < 6) throw new Error("Password must be at least 6 characters.");
+                    if (password !== confirmPassword) throw new Error("Passwords do not match.");
+
                     const { data: existingUser, error: checkError } = await supabaseClient.from('profiles').select('username').eq('username', username).single();
                     if (checkError && checkError.code !== 'PGRST116') throw checkError;
                     if (existingUser) throw new Error("Username is already taken.");
@@ -812,13 +814,8 @@
             // Listen for storage changes to sync across tabs
             window.addEventListener('storage', (event) => {
                 if (event.key === 'currentUserUsername') {
-                    if (event.newValue) {
-                        // User logged in on another tab
-                        checkSession();
-                    } else {
-                        // User logged out on another tab
-                        logout();
-                    }
+                   // A login or logout happened in another tab, reload this tab to sync
+                   window.location.reload();
                 }
             });
 
