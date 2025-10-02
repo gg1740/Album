@@ -538,17 +538,29 @@
                 saveProfileBtn.disabled = true;
                 profileLoadingSpinner.style.display = 'flex';
 
-                let profilePicUrl = currentUser.profile_picture_url;
+                const oldProfilePicUrl = currentUser.profile_picture_url;
+                let newProfilePicUrl = oldProfilePicUrl;
                 const profileFile = profilePicUpload.files[0];
-                if (profileFile) profilePicUrl = await uploadFile(profileFile, 'profile-pictures');
+                if (profileFile) {
+                    newProfilePicUrl = await uploadFile(profileFile, 'profile-pictures');
+                    if (newProfilePicUrl && oldProfilePicUrl && !oldProfilePicUrl.includes('placehold.co')) {
+                        await deleteFile('profile-pictures', oldProfilePicUrl);
+                    }
+                }
 
-                let backgroundPicUrl = currentUser.background_picture_url;
+                const oldBgPicUrl = currentUser.background_picture_url;
+                let newBgPicUrl = oldBgPicUrl;
                 const backgroundFile = backgroundPicUpload.files[0];
-                if (backgroundFile) backgroundPicUrl = await uploadFile(backgroundFile, 'profile-pictures');
+                if (backgroundFile) {
+                    newBgPicUrl = await uploadFile(backgroundFile, 'profile-pictures');
+                     if (newBgPicUrl && oldBgPicUrl && !oldBgPicUrl.includes('placehold.co')) {
+                        await deleteFile('profile-pictures', oldBgPicUrl);
+                    }
+                }
 
                 const updates = {
                     display_name: displayNameInput.value, title: titleInput.value, bio: bioInput.value,
-                    profile_picture_url: profilePicUrl, background_picture_url: backgroundPicUrl
+                    profile_picture_url: newProfilePicUrl, background_picture_url: newBgPicUrl
                 };
 
                 const { data, error } = await supabaseClient.from('profiles').update(updates).eq('username', currentUser.username).select().single();
@@ -725,11 +737,9 @@
             async function handleDeletePost() {
                 const { postId, mediaUrl } = postToDelete;
                 if (!postId) return;
-
+                
                 if (mediaUrl) {
-                    const filePath = mediaUrl.substring(mediaUrl.lastIndexOf('post-media/') + 'post-media/'.length);
-                    const { error: storageError } = await supabaseClient.storage.from('post-media').remove([filePath]);
-                    if (storageError) console.error("Error deleting file:", storageError);
+                    await deleteFile('post-media', mediaUrl);
                 }
                 
                 const { error: dbError } = await supabaseClient.from('posts').delete().eq('id', postId);
@@ -777,6 +787,12 @@
                 if (error) { console.error(`Error uploading to ${bucket}:`, error); return null; }
                 const { data } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
                 return data.publicUrl;
+            }
+
+             async function deleteFile(bucket, fileUrl) {
+                const filePath = fileUrl.substring(fileUrl.lastIndexOf(bucket + '/') + (bucket + '/').length);
+                const { error } = await supabaseClient.storage.from(bucket).remove([filePath]);
+                if (error) console.error(`Error deleting file from ${bucket}:`, error);
             }
 
             // --- Event Listeners ---
