@@ -789,10 +789,21 @@
                 return data.publicUrl;
             }
 
-             async function deleteFile(bucket, fileUrl) {
-                const filePath = fileUrl.substring(fileUrl.lastIndexOf(bucket + '/') + (bucket + '/').length);
-                const { error } = await supabaseClient.storage.from(bucket).remove([filePath]);
-                if (error) console.error(`Error deleting file from ${bucket}:`, error);
+            async function deleteFile(bucket, fileUrl) {
+                if (!fileUrl) return;
+                try {
+                    const url = new URL(fileUrl);
+                    const pathParts = url.pathname.split('/');
+                    const bucketIndex = pathParts.indexOf(bucket);
+                    if (bucketIndex === -1 || bucketIndex === pathParts.length - 1) {
+                        throw new Error("Could not determine file path from URL.");
+                    }
+                    const filePath = pathParts.slice(bucketIndex + 1).join('/');
+                    const { error } = await supabaseClient.storage.from(bucket).remove([filePath]);
+                    if (error) throw error;
+                } catch (error) {
+                    console.error(`Error deleting file from ${bucket}:`, error);
+                }
             }
 
             // --- Event Listeners ---
