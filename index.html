@@ -87,6 +87,12 @@
 
         <!-- Login Screen -->
         <div id="login-screen" class="min-h-screen flex flex-col items-center justify-center hidden">
+             <div class="absolute top-4 right-4">
+                <button class="theme-toggle-btn p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="theme-toggle-dark-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg class="theme-toggle-light-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+            </div>
             <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-sm">
                 <div class="text-center mb-8">
                     <img src="./logo.jpeg" alt="suki logo" class="w-16 h-16 mx-auto mb-4 rounded-full">
@@ -118,6 +124,12 @@
         
         <!-- Registration Screen -->
         <div id="register-screen" class="min-h-screen flex flex-col items-center justify-center hidden">
+            <div class="absolute top-4 right-4">
+                <button class="theme-toggle-btn p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="theme-toggle-dark-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg class="theme-toggle-light-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+            </div>
             <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-sm">
                 <div class="text-center mb-8">
                     <img src="./logo.jpeg" alt="suki logo" class="w-16 h-16 mx-auto mb-4 rounded-full">
@@ -165,9 +177,9 @@
                     <p id="welcome-message" class="text-gray-500 dark:text-gray-400 mt-1">Viewing all posts</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button id="theme-toggle-btn" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg id="theme-toggle-dark-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <svg id="theme-toggle-light-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <button class="theme-toggle-btn p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="theme-toggle-dark-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg class="theme-toggle-light-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     </button>
                     <button id="profile-btn" class="font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Profile</button>
                     <button id="settings-btn" class="font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Settings</button>
@@ -327,7 +339,7 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             const bcrypt = dcodeIO.bcrypt;
-            // This is a HASH of your token "this_is_a_token_for_acc". It is secure.
+            //this_is_a_token_for_acc
             const HASHED_REGISTRATION_TOKEN = "$2a$10$fPL4wJ.L9nZJ5wX3nE4z8u.j3B8c3D9g.H6K8g5J4i7L6k9M2N0O";
             const supabaseUrl = 'https://gmspsldgxgbhtoepkyaw.supabase.co';
             const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdtc3BzbGRneGdiaHRvZXBreWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxMjA0NjIsImV4cCI6MjA3NDY5NjQ2Mn0.7wMhuvMrMhxAbo4lSKCnF5wa5_XtOGKAtu3hOqmxDBg';
@@ -386,9 +398,8 @@
             const editPostModal = document.getElementById('edit-post-modal');
             const editPostForm = document.getElementById('edit-post-form');
             const editPostContent = document.getElementById('edit-post-content');
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const darkIcon = document.getElementById('theme-toggle-dark-icon');
-            const lightIcon = document.getElementById('theme-toggle-light-icon');
+            
+            const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
 
             function showLoginScreen() {
                 pageLoader.classList.add('hidden');
@@ -835,13 +846,12 @@
             }
 
             function updateThemeIcons(isDark) {
-                if (isDark) {
-                    darkIcon.classList.add('hidden');
-                    lightIcon.classList.remove('hidden');
-                } else {
-                    darkIcon.classList.remove('hidden');
-                    lightIcon.classList.add('hidden');
-                }
+                document.querySelectorAll('.theme-toggle-dark-icon').forEach(icon => {
+                    icon.classList.toggle('hidden', isDark);
+                });
+                document.querySelectorAll('.theme-toggle-light-icon').forEach(icon => {
+                    icon.classList.toggle('hidden', !isDark);
+                });
             }
 
 
@@ -864,7 +874,10 @@
             confirmDeleteBtn.addEventListener('click', handleDeletePost);
             editPostForm.addEventListener('submit', handleEditPost);
             document.getElementById('cancel-edit-btn').addEventListener('click', closeEditPostModal);
-            themeToggleBtn.addEventListener('click', handleThemeToggle);
+            
+            themeToggleBtns.forEach(btn => {
+                btn.addEventListener('click', handleThemeToggle);
+            });
 
             postsFeed.addEventListener('click', (e) => {
                 if (e.target.closest('.view-profile-trigger')) {
